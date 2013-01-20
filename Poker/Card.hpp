@@ -10,30 +10,33 @@ public:
 		SuitClubs,
 		SuitHearts,
 		SuitSpades,
-		SuitDiamonds
+		SuitDiamonds,
+		NumSuits
 	};
 
-	enum {
+	enum Rank {
 		RankNone = 0,
 		RankAce = 1,
 		RankJack = 11,
 		RankQueen = 12,
-		RankKing = 13
+		RankKing = 13,
+		NumRanks
 	};
 
 	Card() : mRank(RankNone), mSuit(SuitNone) {}
-	Card(int rank, Suit suit) : mRank(rank), mSuit(suit) {}
+	Card(Rank rank, Suit suit) : mRank(rank), mSuit(suit) {}
+	Card(int rank, Suit suit) : mRank((Rank)rank), mSuit(suit) {}
 
 	bool operator==(const Card &other) const { return mSuit == other.mSuit && mRank == other.mRank; }
 	bool operator!=(const Card &other) const { return !(*this == other); }
 	
-	int rank() const { return mRank; }
+	Rank rank() const { return mRank; }
 	Suit suit() const { return mSuit; }
 
 	static const Card None;
 
 private:
-	int mRank;
+	Rank mRank;
 	Suit mSuit;
 };
 

@@ -37,6 +37,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
+				RuntimeLibrary="1"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -49,6 +52,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				GenerateDebugInformation="true"
 				SubSystem="1"
 			/>
 			<Tool
@@ -154,6 +158,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Hand.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Main.cpp"
 				>
 			</File>
@@ -169,6 +177,10 @@
 			</File>
 			<File
 				RelativePath=".\Cards.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Hand.hpp"
 				>
 			</File>
 		</Filter>
