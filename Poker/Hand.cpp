@@ -2,11 +2,20 @@
 
 #include <algorithm>
 
-Hand::Hand(Type type, Card::Rank rank0, Card::Rank rank1)
+Hand::Hand()
+{
+	mType = TypeNone;
+	for(int i=0; i<5; i++) {
+		mRanks[i] = Card::RankNone;
+	}
+}
+
+Hand::Hand(Type type, Card::Rank ranks[5])
 {
 	mType = type;
-	mRanks[0] = rank0;
-	mRanks[1] = rank1;
+	for(int i=0; i<5; i++) {
+		mRanks[i] = ranks[i];
+	}
 }
 
 struct RankDesc {
@@ -51,12 +60,15 @@ static void countSuits(const Cards &cards, int counts[Card::NumSuits])
 	}
 }
 
-static bool isSet(const int ranks[Card::NumRanks], int count)
+static bool isSet(const int rankCounts[Card::NumRanks], int count, Card::Rank ranks[5])
 {
 	bool ret = false;
-	for(int i=1; i<Card::NumRanks; i++) {
-		if(ranks[i] >= count) {
+	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+		Card::Rank rank = Card::aceLow(i);
+
+		if(rankCounts[rank] >= count) {
 			ret = true;
+			ranks[0] = rank;
 			break;
 		}
 	}
@@ -64,38 +76,35 @@ static bool isSet(const int ranks[Card::NumRanks], int count)
 	return ret;
 }
 
-static bool isTwoPair(const int ranks[Card::NumRanks])
+static bool isTwoPair(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 {
 	bool ret = false;
-	int count = 0;
+	int p = 0;
 
-	for(int i=1; i<Card::NumRanks; i++) {
-		if(ranks[i] > 1) {
-			count++;
+	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+		Card::Rank rank = Card::aceLow(i);
+
+		if(rankCounts[rank] > 1) {
+			ranks[p++] = rank;
 		}
 	}
 
-	if(count > 1) {
+	if(p > 1) {
 		ret = true;
 	}
 
 	return ret;
 }
 
-static bool isStraight(const int ranks[Card::NumRanks], int &start)
+static bool isStraight(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 {
 	bool ret = false;
-	for(int i=1; i<Card::NumRanks; i++) {
+	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
 		int count = 0;
 		for(int j=0; j<5; j++) {
-			int pos = i + j;
-			if(pos == Card::RankKing + 1) {
-				pos = Card::RankAce;
-			} else if(pos > Card::RankKing + 1) {
-				break;
-			}
+			Card::Rank rank = Card::aceLow(i - j);
 
-			if(ranks[pos] > 0) {
+			if(rankCounts[rank] > 0) {
 				count++;
 			} else {
 				break;
@@ -104,48 +113,69 @@ static bool isStraight(const int ranks[Card::NumRanks], int &start)
 
 		if(count > 4) {
 			ret = true;
-			start = i;
+			ranks[0] = Card::aceLow(i);
 			break;
-		} else if(count > 0) {
-			i += count - 1;
 		}
 	}
 
 	return ret;
 }
 
-static bool isStraight(int ranks[Card::NumRanks])
-{
-	int start;
-	return isStraight(ranks, start);
-}
-
-static bool isFlush(int suits[Card::NumSuits])
+static bool isFlush(int suitCounts[Card::NumSuits], const Cards &cards, Card::Rank ranks[5])
 {
 	bool ret = false;
+	Card::Suit suit;
+
 	for(int i=1; i<Card::NumSuits; i++) {
-		if(suits[i] > 4) {
+		if(suitCounts[i] > 4) {
+			suit = (Card::Suit)i;
 			ret = true;
 			break;
 		}
 	}
 
+	if(ret) {
+		Card::Rank *sortedRanks = new Card::Rank[cards.size()];
+		int pos = 0;
+		for(int i=0; i<cards.size(); i++) {
+			sortedRanks[i] = Card::RankNone;
+		}
+
+		for(unsigned int i=0; i<cards.size(); i++) {
+			if(cards[i].suit() == suit) {
+				sortedRanks[pos++] = Card::aceHigh(cards[i].rank());
+			}
+		}
+
+		std::sort(&sortedRanks[0], &sortedRanks[cards.size()]);
+
+		for(int i=0; i<5; i++) {
+			ranks[i] = Card::aceLow(sortedRanks[cards.size() - i - 1]);
+		}
+
+		delete[] sortedRanks;
+	}
 	return ret;
 }
 
-static bool isFullHouse(int ranks[Card::NumRanks])
+static bool isFullHouse(int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 {
 	bool ret = false;
 	bool found2 = false;
 	bool found3 = false;
-	for(int i=1; i<Card::NumRanks; i++) {
-		if(ranks[i] > 2) {
+	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+		Card::Rank rank = Card::aceLow(i);
+
+		if(rankCounts[rank] > 2) {
 			if(found3) {
+				ranks[1] = rank;
 				found2 = true;
 			} else {
+				ranks[0] = rank;
 				found3 = true;
 			}
-		} else if(ranks[i] > 1) {
+		} else if(rankCounts[rank] > 1) {
+			ranks[1] = rank;
 			found2 = true;
 		}
 
@@ -158,12 +188,12 @@ static bool isFullHouse(int ranks[Card::NumRanks])
 	return ret;
 }
 
-static bool isStraightFlush(const Cards &cards, int ranks[Card::NumRanks])
+static bool isStraightFlush(const Cards &cards, int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 {
 	bool ret = false;
-	int start;
 
-	if(isStraight(ranks, start)) {
+	if(isStraight(rankCounts, ranks)) {
+		int start = (ranks[0] == Card::RankAce) ? 10 : ranks[0] - 4;
 		int suitCounts[Card::NumSuits];
 		for(int i=1; i<Card::NumSuits; i++) {
 			suitCounts[i] = 0;
@@ -188,15 +218,10 @@ static bool isStraightFlush(const Cards &cards, int ranks[Card::NumRanks])
 	return ret;
 }
 
-bool Hand::is(Type type, const Cards &cards)
+bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits])
 {
-	int ranks[Card::NumRanks];
-	int suits[Card::NumSuits];
 	bool ret;
 	int start;
-
-	countRanks(cards, ranks);
-	countSuits(cards, suits);
 
 	switch(type) {
 		case Hand::TypeHighCard:
@@ -204,35 +229,35 @@ bool Hand::is(Type type, const Cards &cards)
 			break;
 
 		case Hand::TypePair:
-			ret = isSet(ranks, 2);
+			ret = isSet(rankCounts, 2, ranks);
 			break;
 
 		case Hand::TypeTwoPair:
-			ret = isTwoPair(ranks);
+			ret = isTwoPair(rankCounts, ranks);
 			break;
 
 		case Hand::TypeThreeOfAKind:
-			ret = isSet(ranks, 3);
+			ret = isSet(rankCounts, 3, ranks);
 			break;
 
 		case Hand::TypeStraight:
-			ret = isStraight(ranks);
+			ret = isStraight(rankCounts, ranks);
 			break;
 
 		case Hand::TypeFlush:
-			ret = isFlush(suits);
+			ret = isFlush(suitCounts, cards, ranks);
 			break;
 
 		case Hand::TypeFullHouse:
-			ret = isFullHouse(ranks);
+			ret = isFullHouse(rankCounts, ranks);
 			break;
 
 		case Hand::TypeFourOfAKind:
-			ret = isSet(ranks, 4);
+			ret = isSet(rankCounts, 4, ranks);
 			break;
 
 		case Hand::TypeStraightFlush:
-			ret = isStraightFlush(cards, ranks);
+			ret = isStraightFlush(cards, rankCounts, ranks);
 			break;
 
 		default:
@@ -240,5 +265,39 @@ bool Hand::is(Type type, const Cards &cards)
 			break;
 	}
 
+	return ret;
+}
+
+bool Hand::is(Type type, const Cards &cards)
+{
+	int rankCounts[Card::NumRanks];
+	int suitCounts[Card::NumSuits];
+
+	countRanks(cards, rankCounts);
+	countSuits(cards, suitCounts);
+
+	Card::Rank ranks[5];
+	return is(type, cards, ranks, rankCounts, suitCounts);
+}
+
+Hand Hand::identify(const Cards &cards)
+{
+	Hand ret;
+	int rankCounts[Card::NumRanks];
+	int suitCounts[Card::NumSuits];
+	Hand::Type type = Hand::TypeNone;
+	Card::Rank ranks[5];
+
+	countRanks(cards, rankCounts);
+	countSuits(cards, suitCounts);
+
+	for(unsigned int i=Hand::TypeStraightFlush; i>Hand::TypeNone; i--) {
+		if(is((Hand::Type)i, cards, ranks, rankCounts, suitCounts)) {
+			type = (Hand::Type)i;
+			break;
+		}
+	}
+
+	ret = Hand(type, ranks);
 	return ret;
 }

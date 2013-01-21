@@ -7,6 +7,7 @@
 class Hand {
 public:
 	enum Type {
+		TypeNone,
 		TypeHighCard,
 		TypePair,
 		TypeTwoPair,
@@ -18,13 +19,16 @@ public:
 		TypeStraightFlush,
 	};
 
-	Hand(Type type, Card::Rank rank0 = Card::RankNone, Card::Rank rank1 = Card::RankNone);
+	Hand();
+	Hand(Type type, Card::Rank ranks[5]);
 
+	static bool is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits]);
 	static bool is(Type type, const Cards &cards);
+	static Hand identify(const Cards &cards);
 
 private:
 	Type mType;
-	Card::Rank mRanks[2];
+	Card::Rank mRanks[5];
 };
 
 #endif

@@ -20,7 +20,8 @@ public:
 		RankJack = 11,
 		RankQueen = 12,
 		RankKing = 13,
-		NumRanks
+		RankAceHigh = 14,
+		NumRanks = RankAceHigh
 	};
 
 	Card() : mRank(RankNone), mSuit(SuitNone) {}
@@ -32,6 +33,12 @@ public:
 	
 	Rank rank() const { return mRank; }
 	Suit suit() const { return mSuit; }
+
+	static Rank aceLow(Rank rank) { return (rank == RankAceHigh) ? RankAce : rank; }
+	static Rank aceLow(int rank) { return aceLow((Rank)rank); }
+
+	static Rank aceHigh(Rank rank) { return (rank == RankAce) ? RankAceHigh : rank; }
+	static Rank aceHigh(int rank) { return aceHigh((Rank)rank); }
 
 	static const Card None;
 
