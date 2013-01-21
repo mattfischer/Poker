@@ -225,7 +225,7 @@ bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts
 
 	switch(type) {
 		case Hand::TypeHighCard:
-			ret = (cards.size() > 0);
+			ret = isSet(rankCounts, 1, ranks);
 			break;
 
 		case Hand::TypePair:
