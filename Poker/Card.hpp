@@ -47,6 +47,8 @@ private:
 	Suit mSuit;
 };
 
+std::ostream &operator<<(std::ostream &o, Card::Rank rank);
+std::ostream &operator<<(std::ostream &o, Card::Suit suit);
 std::ostream &operator<<(std::ostream &o, const Card &card);
 
 #endif

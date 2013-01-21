@@ -301,3 +301,20 @@ Hand Hand::identify(const Cards &cards)
 	ret = Hand(type, ranks);
 	return ret;
 }
+
+std::ostream &operator<<(std::ostream &o, const Hand &hand)
+{
+	const char *names[] = { "None", "High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush" };
+	int rankCounts[] = { 0, 1, 1, 2, 1, 1, 5, 2, 1, 1 };
+
+	o << names[hand.type()] << " (";
+	for(int i=0; i<rankCounts[hand.type()]; i++) {
+		o << hand.rank(i);
+		if(i < rankCounts[hand.type()] - 1) {
+			o << " ";
+		}
+	}
+	o << ")";
+
+	return o;
+}
