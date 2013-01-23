@@ -38,14 +38,16 @@ struct SuitDesc {
 	}
 };
 
-static void countRanks(const Cards &cards, int counts[Card::NumRanks])
+static void countRanks(const Cards &cards, int counts[Card::NumRanks], Card::Suit suit = Card::SuitNone)
 {
 	for(int i=0; i<Card::NumRanks; i++) {
 		counts[i] = 0;
 	}
 
 	for(unsigned int i=0; i<cards.size(); i++) {
-		counts[cards[i].rank()]++;
+		if(suit == Card::SuitNone || cards[i].suit() == suit) {
+			counts[cards[i].rank()]++;
+		}
 	}
 }
 
@@ -63,12 +65,25 @@ static void countSuits(const Cards &cards, int counts[Card::NumSuits])
 static bool isSet(const int rankCounts[Card::NumRanks], int count, Card::Rank ranks[5])
 {
 	bool ret = false;
-	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
 		Card::Rank rank = Card::aceLow(i);
 
 		if(rankCounts[rank] >= count) {
 			ret = true;
 			ranks[0] = rank;
+
+			int n = 0;
+			int numKickers = 5 - count;
+			for(int j=Card::RankAceHigh; j>Card::RankAce; j--) {
+				Card::Rank kicker = Card::aceLow(j);
+				if(rankCounts[kicker] != 0 && kicker != rank) {
+					ranks[n + 1] = kicker;
+					n++;
+					if(n == numKickers) {
+						break;
+					}
+				}
+			}
 			break;
 		}
 	}
@@ -81,7 +96,7 @@ static bool isTwoPair(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 	bool ret = false;
 	int p = 0;
 
-	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
 		Card::Rank rank = Card::aceLow(i);
 
 		if(rankCounts[rank] > 1) {
@@ -91,6 +106,19 @@ static bool isTwoPair(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 
 	if(p > 1) {
 		ret = true;
+
+		int n = 0;
+		int numKickers = 1;
+		for(int j=Card::RankAceHigh; j>Card::RankAce; j--) {
+			Card::Rank kicker = Card::aceLow(j);
+			if(rankCounts[kicker] != 0 && kicker != ranks[0] && kicker != ranks[1]) {
+				ranks[n + 2] = kicker;
+				n++;
+				if(n == numKickers) {
+					break;
+				}
+			}
+		}
 	}
 
 	return ret;
@@ -163,7 +191,7 @@ static bool isFullHouse(int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 	bool ret = false;
 	bool found2 = false;
 	bool found3 = false;
-	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
 		Card::Rank rank = Card::aceLow(i);
 
 		if(rankCounts[rank] > 2) {
@@ -188,30 +216,16 @@ static bool isFullHouse(int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 	return ret;
 }
 
-static bool isStraightFlush(const Cards &cards, int rankCounts[Card::NumRanks], Card::Rank ranks[5])
+static bool isStraightFlush(const Cards &cards, Card::Rank ranks[5])
 {
 	bool ret = false;
+	int rankCounts[Card::NumRanks];
 
-	if(isStraight(rankCounts, ranks)) {
-		int start = (ranks[0] == Card::RankAce) ? 10 : ranks[0] - 4;
-		int suitCounts[Card::NumSuits];
-		for(int i=1; i<Card::NumSuits; i++) {
-			suitCounts[i] = 0;
-		}
-
-		for(int i=0; i<cards.size(); i++) {
-			int pos = cards[i].rank() - start;
-			if(cards[i].rank() == Card::RankAce && start == 10) {
-				pos = 4;
-			}
-
-			if(pos >= 0 && pos < 5) {
-				suitCounts[cards[i].suit()]++;
-				if(suitCounts[cards[i].suit()] == 5) {
-					ret = true;
-					break;
-				}
-			}
+	for(int i=1; i<Card::NumSuits; i++) {
+		countRanks(cards, rankCounts, (Card::Suit)i);
+		if(isStraight(rankCounts, ranks)) {
+			ret = true;
+			break;
 		}
 	}
 
@@ -257,7 +271,7 @@ bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts
 			break;
 
 		case Hand::TypeStraightFlush:
-			ret = isStraightFlush(cards, rankCounts, ranks);
+			ret = isStraightFlush(cards, ranks);
 			break;
 
 		default:
@@ -305,7 +319,7 @@ Hand Hand::identify(const Cards &cards)
 std::ostream &operator<<(std::ostream &o, const Hand &hand)
 {
 	const char *names[] = { "None", "High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush" };
-	int rankCounts[] = { 0, 1, 1, 2, 1, 1, 5, 2, 1, 1 };
+	int rankCounts[] = { 0, 5, 4, 3, 1, 1, 5, 2, 2, 1 };
 
 	o << names[hand.type()] << " (";
 	for(int i=0; i<rankCounts[hand.type()]; i++) {

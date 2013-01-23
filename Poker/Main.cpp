@@ -11,11 +11,11 @@ int main(int argc, char *argv[])
 {
 	Cards cards(5);
 
-	cards.add(Card(9, Card::SuitHearts));
-	cards.add(Card(9, Card::SuitSpades));
-	cards.add(Card(13, Card::SuitSpades));
-	cards.add(Card(1, Card::SuitSpades));
-	cards.add(Card(1, Card::SuitSpades));
+	cards.add(Card(1, Card::SuitHearts));
+	cards.add(Card(1, Card::SuitClubs));
+	cards.add(Card(2, Card::SuitHearts));
+	cards.add(Card(4, Card::SuitClubs));
+	cards.add(Card(3, Card::SuitHearts));
 
 	Hand hand = Hand::identify(cards);
 
