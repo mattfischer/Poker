@@ -18,26 +18,6 @@ Hand::Hand(Type type, Card::Rank ranks[5])
 	}
 }
 
-struct RankDesc {
-	Card::Rank rank;
-	int count;
-
-	bool operator<(const RankDesc &other)
-	{
-		return count < other.count;
-	}
-};
-
-struct SuitDesc {
-	Card::Suit suit;
-	int count;
-
-	bool operator<(const SuitDesc &other)
-	{
-		return count < other.count;
-	}
-};
-
 static void countRanks(const Cards &cards, int counts[Card::NumRanks], Card::Suit suit = Card::SuitNone)
 {
 	for(int i=0; i<Card::NumRanks; i++) {
@@ -235,7 +215,6 @@ static bool isStraightFlush(const Cards &cards, Card::Rank ranks[5])
 bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits])
 {
 	bool ret;
-	int start;
 
 	for(int i=0; i<5; i++) {
 		ranks[i] = Card::RankNone;
