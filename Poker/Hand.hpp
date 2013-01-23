@@ -27,6 +27,9 @@ public:
 
 	static bool is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits]);
 	static bool is(Type type, const Cards &cards);
+
+	static bool possible(Type type, const Cards &cards);
+
 	static Hand identify(const Cards &cards);
 
 private:

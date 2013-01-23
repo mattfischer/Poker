@@ -45,7 +45,7 @@ static void countRanks(const Cards &cards, int counts[Card::NumRanks], Card::Sui
 	}
 
 	for(unsigned int i=0; i<cards.size(); i++) {
-		if(suit == Card::SuitNone || cards[i].suit() == suit) {
+		if(cards[i].rank() == Card::RankNone || suit == Card::SuitNone || cards[i].suit() == suit) {
 			counts[cards[i].rank()]++;
 		}
 	}
@@ -127,7 +127,7 @@ static bool isTwoPair(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 static bool isStraight(const int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 {
 	bool ret = false;
-	for(int i=Card::RankAceHigh; i>Card::RankNone; i--) {
+	for(int i=Card::RankAceHigh; i>=5; i--) {
 		int count = 0;
 		for(int j=0; j<5; j++) {
 			Card::Rank rank = Card::aceLow(i - j);
@@ -237,6 +237,10 @@ bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts
 	bool ret;
 	int start;
 
+	for(int i=0; i<5; i++) {
+		ranks[i] = Card::RankNone;
+	}
+
 	switch(type) {
 		case Hand::TypeHighCard:
 			ret = isSet(rankCounts, 1, ranks);
@@ -292,6 +296,185 @@ bool Hand::is(Type type, const Cards &cards)
 
 	Card::Rank ranks[5];
 	return is(type, cards, ranks, rankCounts, suitCounts);
+}
+
+static bool possibleSet(const int rankCounts[Card::NumRanks], int count)
+{
+	int maxCount = 0;
+	bool ret = false;
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
+		Card::Rank rank = Card::aceLow(i);
+		if(rankCounts[rank] > maxCount) {
+			maxCount = rankCounts[rank];
+		}
+	}
+
+	if(maxCount + rankCounts[Card::RankNone] >= count) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+static bool possibleTwoPair(const int rankCounts[Card::NumRanks])
+{
+	int maxCounts[2];
+
+	maxCounts[0] = 0;
+	maxCounts[1] = 0;
+
+	bool ret = false;
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
+		Card::Rank rank = Card::aceLow(i);
+		if(rankCounts[rank] > maxCounts[0]) {
+			maxCounts[1] = maxCounts[0];
+			maxCounts[0] = (rankCounts[rank] > 2) ? 2 : rankCounts[rank];
+		} else if(rankCounts[rank] > maxCounts[1]) {
+			maxCounts[1] = (rankCounts[rank] > 2) ? 2 : rankCounts[rank];
+		}
+	}
+
+	if(maxCounts[0] + maxCounts[1] + rankCounts[Card::RankNone] >= 5) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+static bool possibleStraight(const int rankCounts[Card::NumRanks])
+{
+	bool ret = false;
+	for(int i=Card::RankAceHigh; i>=5; i--) {
+		int count = 0;
+		int noneLeft = rankCounts[Card::RankNone];
+		for(int j=0; j<5; j++) {
+			Card::Rank rank = Card::aceLow(i - j);
+
+			if(rankCounts[rank] > 0) {
+				count++;
+			} else if(noneLeft > 0) {
+				count++;
+				noneLeft--;
+			} else {
+				break;
+			}
+		}
+
+		if(count > 4) {
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+static bool possibleFlush(const int suitCounts[Card::NumSuits], const int rankCounts[Card::NumRanks])
+{
+	bool ret = false;
+	for(int i=1; i<Card::NumSuits; i++) {
+		if(suitCounts[i] + rankCounts[Card::RankNone] >= 5) {
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+static bool possibleFullHouse(const int rankCounts[Card::NumRanks])
+{
+	int maxCounts[2];
+
+	maxCounts[0] = 0;
+	maxCounts[1] = 0;
+
+	bool ret = false;
+	for(int i=Card::RankAceHigh; i>Card::RankAce; i--) {
+		Card::Rank rank = Card::aceLow(i);
+		if(rankCounts[rank] > maxCounts[0]) {
+			maxCounts[1] = maxCounts[0];
+			maxCounts[0] = (rankCounts[rank] > 3) ? 3 : rankCounts[rank];
+		} else if(rankCounts[rank] > maxCounts[1]) {
+			maxCounts[1] = (rankCounts[rank] > 3) ? 3 : rankCounts[rank];
+		}
+	}
+
+	if(maxCounts[0] + maxCounts[1] + rankCounts[Card::RankNone] >= 5) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+static bool possibleStraightFlush(const Cards &cards)
+{
+	bool ret = false;
+	int rankCounts[Card::NumRanks];
+
+	for(int i=1; i<Card::NumSuits; i++) {
+		countRanks(cards, rankCounts, (Card::Suit)i);
+		if(possibleStraight(rankCounts)) {
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+bool Hand::possible(Type type, const Cards &cards)
+{
+	bool ret;
+	int rankCounts[Card::NumRanks];
+	int suitCounts[Card::NumSuits];
+
+	countRanks(cards, rankCounts);
+	countSuits(cards, suitCounts);
+
+	switch(type) {
+		case Hand::TypeHighCard:
+			ret = possibleSet(rankCounts, 1);
+			break;
+
+		case Hand::TypePair:
+			ret = possibleSet(rankCounts, 2);
+			break;
+
+		case Hand::TypeTwoPair:
+			ret = possibleTwoPair(rankCounts);
+			break;
+
+		case Hand::TypeThreeOfAKind:
+			ret = possibleSet(rankCounts, 3);
+			break;
+
+		case Hand::TypeStraight:
+			ret = possibleStraight(rankCounts);
+			break;
+
+		case Hand::TypeFlush:
+			ret = possibleFlush(suitCounts, rankCounts);
+			break;
+
+		case Hand::TypeFullHouse:
+			ret = possibleFullHouse(rankCounts);
+			break;
+
+		case Hand::TypeFourOfAKind:
+			ret = possibleSet(rankCounts, 4);
+			break;
+
+		case Hand::TypeStraightFlush:
+			ret = possibleStraightFlush(cards);
+			break;
+
+		default:
+			ret = false;
+			break;
+	}
+
+	return ret;
 }
 
 Hand Hand::identify(const Cards &cards)
