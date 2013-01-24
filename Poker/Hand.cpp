@@ -18,6 +18,31 @@ Hand::Hand(Type type, Card::Rank ranks[5])
 	}
 }
 
+bool Hand::operator<(const Hand &other) const
+{
+	return compare(other) < 0;
+}
+
+bool Hand::operator>(const Hand &other) const
+{
+	return compare(other) > 0;
+}
+
+int Hand::compare(const Hand &other) const
+{
+	if(mType != other.mType) {
+		return (mType < other.mType) ? -1 : 1;
+	}
+
+	for(int i=0; i<5; i++) {
+		if(mRanks[i] != other.mRanks[i]) {
+			return (Card::aceHigh(mRanks[i]) < Card::aceHigh(other.mRanks[i])) ? -1 : 1;
+		}
+	}
+
+	return 0;
+}
+
 static void countRanks(const Cards &cards, int counts[Card::NumRanks], Card::Suit suit = Card::SuitNone)
 {
 	for(int i=0; i<Card::NumRanks; i++) {
@@ -313,7 +338,7 @@ static bool possibleTwoPair(const int rankCounts[Card::NumRanks])
 		}
 	}
 
-	if(maxCounts[0] + maxCounts[1] + rankCounts[Card::RankNone] >= 5) {
+	if(maxCounts[0] + maxCounts[1] + rankCounts[Card::RankNone] >= 4) {
 		ret = true;
 	}
 
@@ -456,26 +481,29 @@ bool Hand::possible(Type type, const Cards &cards)
 	return ret;
 }
 
-Hand Hand::identify(const Cards &cards)
+Hand Hand::identify(const Cards &cards, Type type)
 {
-	Hand ret;
 	int rankCounts[Card::NumRanks];
 	int suitCounts[Card::NumSuits];
-	Hand::Type type = Hand::TypeNone;
 	Card::Rank ranks[5];
 
 	countRanks(cards, rankCounts);
 	countSuits(cards, suitCounts);
 
-	for(unsigned int i=Hand::TypeStraightFlush; i>Hand::TypeNone; i--) {
-		if(is((Hand::Type)i, cards, ranks, rankCounts, suitCounts)) {
-			type = (Hand::Type)i;
-			break;
+	if(type == TypeNone) {
+		for(unsigned int i=Hand::TypeStraightFlush; i>Hand::TypeNone; i--) {
+			if(is((Hand::Type)i, cards, ranks, rankCounts, suitCounts)) {
+				type = (Hand::Type)i;
+				break;
+			}
+		}
+	} else {
+		if(!is(type, cards, ranks, rankCounts, suitCounts)) {
+			type = TypeNone;
 		}
 	}
 
-	ret = Hand(type, ranks);
-	return ret;
+	return Hand(type, ranks);
 }
 
 std::ostream &operator<<(std::ostream &o, const Hand &hand)

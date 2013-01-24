@@ -1,12 +1,12 @@
 #include "Draws.hpp"
 
-std::vector<Cards> Draws::draws(Hand::Type type, const Cards &cards, const std::vector<Card> &available)
+std::vector<Cards> Draws::draws(const Cards &cards, const std::vector<Card> &available, Hand::Type type)
 {
 	Cards mutableCards(cards);
-	return drawsRecursive(type, mutableCards, available, 0);
+	return drawsRecursive(mutableCards, available, type, 0);
 }
 
-std::vector<Cards> Draws::drawsRecursive(Hand::Type type, Cards &cards, const std::vector<Card> &available, int start)
+std::vector<Cards> Draws::drawsRecursive(Cards &cards, const std::vector<Card> &available, Hand::Type type, int start)
 {
 	std::vector<Cards> ret;
 
@@ -27,7 +27,7 @@ std::vector<Cards> Draws::drawsRecursive(Hand::Type type, Cards &cards, const st
 			cards.push(card);
 
 			if(Hand::possible(type, cards)) {
-				std::vector<Cards> draws = drawsRecursive(type, cards, available, i + 1);
+				std::vector<Cards> draws = drawsRecursive(cards, available, type, i + 1);
 				for(int j=0; j<draws.size(); j++) {
 					Cards draw(draws[j].size() + 1);
 					draw.push(card);
@@ -43,13 +43,13 @@ std::vector<Cards> Draws::drawsRecursive(Hand::Type type, Cards &cards, const st
 	return ret;
 }
 
-int Draws::numDraws(Hand::Type type, const Cards &cards, const std::vector<Card> &available)
+int Draws::numDraws(const Cards &cards, const std::vector<Card> &available, Hand::Type type)
 {
 	Cards mutableCards(cards);
-	return numDrawsRecursive(type, mutableCards, available, 0);
+	return numDrawsRecursive(mutableCards, available, type, 0);
 }
 
-int Draws::numDrawsRecursive(Hand::Type type, Cards &cards, const std::vector<Card> &available, int start)
+int Draws::numDrawsRecursive(Cards &cards, const std::vector<Card> &available, Hand::Type type, int start)
 {
 	int ret = 0;
 
@@ -68,11 +68,41 @@ int Draws::numDrawsRecursive(Hand::Type type, Cards &cards, const std::vector<Ca
 			cards.push(card);
 
 			if(Hand::possible(type, cards)) {
-				ret += numDrawsRecursive(type, cards, available, i + 1);
+				ret += numDrawsRecursive(cards, available, type, i + 1);
 			}
 
 			cards.pop();
 		}
+	}
+
+	return ret;
+}
+
+Hand Draws::nut(const Cards &cards, const std::vector<Card> &available, Hand::Type type)
+{
+	std::vector<Cards> nutDraws;
+
+	if(type == Hand::TypeNone) {
+		for(int i=Hand::TypeStraightFlush; i>Hand::TypeNone; i--) {
+			type = (Hand::Type)i;
+			nutDraws = draws(cards, available, type);
+			if(nutDraws.size() > 0) {
+				break;
+			}
+		}
+	} else {
+		nutDraws = draws(cards, available, type);
+	}
+
+	Hand ret;
+	Cards mutableCards(cards);
+	for(int i=0; i<nutDraws.size(); i++) {
+		mutableCards.push(nutDraws[i]);
+		Hand hand = Hand::identify(mutableCards, type);
+		if(hand > ret) {
+			ret = hand;
+		}
+		mutableCards.pop(nutDraws[i].size());
 	}
 
 	return ret;

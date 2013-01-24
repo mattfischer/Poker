@@ -8,12 +8,13 @@
 
 class Draws {
 public:
-	static std::vector<Cards> draws(Hand::Type type, const Cards &cards, const std::vector<Card> &available);
-	static int numDraws(Hand::Type type, const Cards &cards, const std::vector<Card> &available);
+	static std::vector<Cards> draws(const Cards &cards, const std::vector<Card> &available, Hand::Type type);
+	static int numDraws(const Cards &cards, const std::vector<Card> &available, Hand::Type type);
+	static Hand nut(const Cards &cards, const std::vector<Card> &available, Hand::Type type = Hand::TypeNone);
 
 private:
-	static std::vector<Cards> drawsRecursive(Hand::Type type, Cards &cards, const std::vector<Card> &available, int start);
-	static int numDrawsRecursive(Hand::Type type, Cards &cards, const std::vector<Card> &available, int start);
+	static std::vector<Cards> drawsRecursive(Cards &cards, const std::vector<Card> &available, Hand::Type type, int start);
+	static int numDrawsRecursive(Cards &cards, const std::vector<Card> &available, Hand::Type type, int start);
 };
 
 #endif

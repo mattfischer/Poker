@@ -25,14 +25,18 @@ public:
 	Type type() const { return mType; }
 	const Card::Rank &rank(int n) const { return mRanks[n]; }
 
+	bool operator<(const Hand &other) const;
+	bool operator>(const Hand &other) const;
+
 	static bool is(Type type, const Cards &cards);
 	static bool possible(Type type, const Cards &cards);
-	static Hand identify(const Cards &cards);
+	static Hand identify(const Cards &cards, Type type = TypeNone);
 
 private:
 	Type mType;
 	Card::Rank mRanks[5];
 
+	int compare(const Hand &other) const;
 	static bool is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits]);
 };
 
