@@ -158,6 +158,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CardSet.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Draws.cpp"
 				>
 			</File>
@@ -181,6 +185,10 @@
 			</File>
 			<File
 				RelativePath=".\Cards.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CardSet.hpp"
 				>
 			</File>
 			<File

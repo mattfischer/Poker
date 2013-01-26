@@ -33,6 +33,7 @@ public:
 	
 	Rank rank() const { return mRank; }
 	Suit suit() const { return mSuit; }
+	int num() const;
 
 	static Rank aceLow(Rank rank) { return (rank == RankAceHigh) ? RankAce : rank; }
 	static Rank aceLow(int rank) { return aceLow((Rank)rank); }
@@ -40,7 +41,10 @@ public:
 	static Rank aceHigh(Rank rank) { return (rank == RankAce) ? RankAceHigh : rank; }
 	static Rank aceHigh(int rank) { return aceHigh((Rank)rank); }
 
+	static Card fromNum(int num);
+
 	static const Card None;
+	static const int NumCards = 52;
 
 private:
 	Rank mRank;
