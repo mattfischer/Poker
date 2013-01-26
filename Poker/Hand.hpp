@@ -17,6 +17,7 @@ public:
 		TypeFullHouse,
 		TypeFourOfAKind,
 		TypeStraightFlush,
+		NumTypes
 	};
 
 	Hand();
@@ -31,6 +32,8 @@ public:
 	static bool is(Type type, const Cards &cards);
 	static bool possible(Type type, const Cards &cards);
 	static Hand identify(const Cards &cards, Type type = TypeNone);
+
+	static const char *name(Type type);
 
 private:
 	Type mType;

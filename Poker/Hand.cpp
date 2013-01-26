@@ -506,12 +506,17 @@ Hand Hand::identify(const Cards &cards, Type type)
 	return Hand(type, ranks);
 }
 
-std::ostream &operator<<(std::ostream &o, const Hand &hand)
+const char *Hand::name(Type type)
 {
 	const char *names[] = { "None", "High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush" };
+	return names[type];
+}
+
+std::ostream &operator<<(std::ostream &o, const Hand &hand)
+{
 	int rankCounts[] = { 0, 5, 4, 3, 1, 1, 5, 2, 2, 1 };
 
-	o << names[hand.type()] << " (";
+	o << Hand::name(hand.type()) << " (";
 	for(int i=0; i<rankCounts[hand.type()]; i++) {
 		o << hand.rank(i);
 		if(i < rankCounts[hand.type()] - 1) {
