@@ -37,9 +37,11 @@ int main(int argc, char *argv[])
 	total /= perm;
 
 	cout << "Probabilities:" << endl;
+	int counts[Hand::NumTypes];
+	Draws::counts(cards, exclude, counts);
 	for(int i=1; i<Hand::NumTypes; i++) {
 		Hand::Type type = (Hand::Type)i;
-		int count = Draws::numDraws(cards, exclude, type);
+		int count = counts[i];
 		if(count > 0) {
 			cout << Hand::name(type) << ": " << count << " (" << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (count * 100.0f / total) << "%)" << endl;
 		}

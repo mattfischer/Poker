@@ -123,3 +123,32 @@ Hand Draws::nut(const Cards &cards, const CardSet &exclude, Hand::Type type)
 
 	return ret;
 }
+
+void Draws::counts(const Cards &cards, const CardSet &exclude, int counts[Hand::NumTypes])
+{
+	for(int i=0; i<Hand::NumTypes; i++) {
+		counts[i] = 0;
+	}
+
+	Cards mutableCards(cards);
+	countsRecursive(mutableCards, exclude, counts, 0);
+}
+
+void Draws::countsRecursive(Cards &cards, const CardSet &exclude, int counts[Hand::NumTypes], int start)
+{
+	if(cards.empty() == 0) {
+		Hand hand = Hand::identify(cards);
+		counts[hand.type()]++;
+	} else {
+		for(int i=start; i<Card::NumCards; i++) {
+			Card card = Card::fromNum(i);
+			if(exclude.contains(card)) {
+				continue;
+			}
+
+			cards.push(card);
+			countsRecursive(cards, exclude, counts, i + 1);
+			cards.pop();
+		}
+	}
+}
