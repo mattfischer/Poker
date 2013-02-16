@@ -10,22 +10,11 @@ std::vector<Cards> Draws::drawsRecursive(Cards &cards, const CardSet &exclude, H
 {
 	std::vector<Cards> ret;
 
-	if(cards.empty() == 1) {
-		for(int i=start; i<Card::NumCards; i++) {
-			Card card = Card::fromNum(i);
-			if(exclude.contains(card)) {
-				continue;
-			}
-
-			cards.push(card);
-			if(Hand::identify(cards).type() == type) {
-				Cards draw(1);
-				draw.push(card);
-				ret.push_back(draw);
-			}
-			cards.pop();
+	if(cards.empty() == 0) {
+		if(Hand::identify(cards).type() == type) {
+			ret.push_back(cards);
 		}
-	} else if(cards.empty() > 1) {
+	} else {
 		for(int i=start; i<Card::NumCards; i++) {
 			Card card = Card::fromNum(i);
 			if(exclude.contains(card)) {
@@ -36,12 +25,7 @@ std::vector<Cards> Draws::drawsRecursive(Cards &cards, const CardSet &exclude, H
 
 			if(Hand::possible(type, cards)) {
 				std::vector<Cards> draws = drawsRecursive(cards, exclude, type, i + 1);
-				for(int j=0; j<draws.size(); j++) {
-					Cards draw(draws[j].size() + 1);
-					draw.push(card);
-					draw.push(draws[j]);
-					ret.push_back(draw);
-				}
+				ret.insert(ret.end(), draws.begin(), draws.end());
 			}
 
 			cards.pop();
@@ -61,20 +45,11 @@ int Draws::numDrawsRecursive(Cards &cards, const CardSet &exclude, Hand::Type ty
 {
 	int ret = 0;
 
-	if(cards.empty() == 1) {
-		for(int i=start; i<Card::NumCards; i++) {
-			Card card = Card::fromNum(i);
-			if(exclude.contains(card)) {
-				continue;
-			}
-
-			cards.push(card);
-			if(Hand::identify(cards).type() == type) {
-				ret++;
-			}
-			cards.pop();
+	if(cards.empty() == 0) {
+		if(Hand::identify(cards).type() == type) {
+			ret++;
 		}
-	} else if(cards.empty() > 1) {
+	} else {
 		for(int i=start; i<Card::NumCards; i++) {
 			Card card = Card::fromNum(i);
 			if(exclude.contains(card)) {
@@ -111,14 +86,11 @@ Hand Draws::nut(const Cards &cards, const CardSet &exclude, Hand::Type type)
 	}
 
 	Hand ret;
-	Cards mutableCards(cards);
 	for(int i=0; i<nutDraws.size(); i++) {
-		mutableCards.push(nutDraws[i]);
-		Hand hand = Hand::identify(mutableCards, type);
+		Hand hand = Hand::identify(nutDraws[i], type);
 		if(hand > ret) {
 			ret = hand;
 		}
-		mutableCards.pop(nutDraws[i].size());
 	}
 
 	return ret;
