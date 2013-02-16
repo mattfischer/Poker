@@ -221,16 +221,21 @@ static bool isFullHouse(int rankCounts[Card::NumRanks], Card::Rank ranks[5])
 	return ret;
 }
 
-static bool isStraightFlush(const Cards &cards, Card::Rank ranks[5])
+static bool isStraightFlush(const Cards &cards, Card::Rank ranks[5], int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits])
 {
 	bool ret = false;
-	int rankCounts[Card::NumRanks];
 
-	for(int i=1; i<Card::NumSuits; i++) {
-		countRanks(cards, rankCounts, (Card::Suit)i);
-		if(isStraight(rankCounts, ranks)) {
-			ret = true;
-			break;
+	if(isFlush(suitCounts, cards, ranks) && isStraight(rankCounts, ranks)) {
+		for(int i=1; i<Card::NumSuits; i++) {
+			if(suitCounts[i] >= 5) {
+				int suitRankCounts[Card::NumRanks];
+
+				countRanks(cards, suitRankCounts, (Card::Suit)i);
+				if(isStraight(suitRankCounts, ranks)) {
+					ret = true;
+					break;
+				}
+			}
 		}
 	}
 
@@ -279,7 +284,7 @@ bool Hand::is(Type type, const Cards &cards, Card::Rank ranks[5], int rankCounts
 			break;
 
 		case Hand::TypeStraightFlush:
-			ret = isStraightFlush(cards, ranks);
+			ret = isStraightFlush(cards, ranks, rankCounts, suitCounts);
 			break;
 
 		default:
@@ -411,16 +416,18 @@ static bool possibleFullHouse(const int rankCounts[Card::NumRanks])
 	return ret;
 }
 
-static bool possibleStraightFlush(const Cards &cards)
+static bool possibleStraightFlush(const Cards &cards, int rankCounts[Card::NumRanks], int suitCounts[Card::NumSuits])
 {
 	bool ret = false;
-	int rankCounts[Card::NumRanks];
 
-	for(int i=1; i<Card::NumSuits; i++) {
-		countRanks(cards, rankCounts, (Card::Suit)i);
-		if(possibleStraight(rankCounts)) {
-			ret = true;
-			break;
+	if(possibleFlush(suitCounts, rankCounts) && possibleStraight(rankCounts)) {
+		for(int i=1; i<Card::NumSuits; i++) {
+			int suitRankCounts[Card::NumRanks];
+			countRanks(cards, rankCounts, (Card::Suit)i);
+			if(possibleStraight(rankCounts)) {
+				ret = true;
+				break;
+			}
 		}
 	}
 
@@ -470,7 +477,7 @@ bool Hand::possible(Type type, const Cards &cards)
 			break;
 
 		case Hand::TypeStraightFlush:
-			ret = possibleStraightFlush(cards);
+			ret = possibleStraightFlush(cards, rankCounts, suitCounts);
 			break;
 
 		default:
