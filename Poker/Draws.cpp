@@ -18,7 +18,7 @@ std::vector<Cards> Draws::drawsRecursive(Cards &cards, const CardSet &exclude, H
 			}
 
 			cards.push(card);
-			if(Hand::is(type, cards)) {
+			if(Hand::identify(cards).type() == type) {
 				Cards draw(1);
 				draw.push(card);
 				ret.push_back(draw);
@@ -69,7 +69,7 @@ int Draws::numDrawsRecursive(Cards &cards, const CardSet &exclude, Hand::Type ty
 			}
 
 			cards.push(card);
-			if(Hand::is(type, cards)) {
+			if(Hand::identify(cards).type() == type) {
 				ret++;
 			}
 			cards.pop();

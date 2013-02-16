@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	Cards cards(5);
 
 	cards.push(Card(1, Card::SuitClubs));
-	cards.push(Card(3, Card::SuitSpades));
+	cards.push(Card(1, Card::SuitSpades));
 	cards.push(Card(8, Card::SuitClubs));
 
 	cout << "Cards: " << cards << endl;
@@ -40,7 +40,9 @@ int main(int argc, char *argv[])
 	for(int i=1; i<Hand::NumTypes; i++) {
 		Hand::Type type = (Hand::Type)i;
 		int count = Draws::numDraws(cards, exclude, type);
-		cout << Hand::name(type) << ": " << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (count * 100.0f / total) << "%" << endl;
+		if(count > 0) {
+			cout << Hand::name(type) << ": " << count << " (" << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (count * 100.0f / total) << "%)" << endl;
+		}
 	}
 	cout << endl;
 
