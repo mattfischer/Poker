@@ -3,6 +3,7 @@
 #include "Hand.hpp"
 #include "Draws.hpp"
 #include "CardSet.hpp"
+#include "Wins.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -12,44 +13,60 @@ using std::endl;
 
 int main(int argc, char *argv[])
 {
-	Cards cards(5);
+	Cards *cards[2];
 
-	cards.push(Card(1, Card::SuitClubs));
-	cards.push(Card(1, Card::SuitSpades));
-	cards.push(Card(8, Card::SuitClubs));
+	cards[0] = new Cards(5);
+	cards[0]->push(Card(5, Card::SuitClubs));
+	cards[0]->push(Card(6, Card::SuitClubs));
+	cards[0]->push(Card(3, Card::SuitClubs));
+	cards[0]->push(Card(4, Card::SuitClubs));
 
-	cout << "Cards: " << cards << endl;
+	cards[1] = new Cards(5);
+	cards[1]->push(Card(1, Card::SuitSpades));
+	cards[1]->push(Card(1, Card::SuitClubs));
+	cards[1]->push(Card(4, Card::SuitSpades));
 
 	CardSet exclude;
-	exclude.add(cards);
 
-	int perm = 1;
-	for(int i=0; i<cards.empty(); i++) {
-		perm *= (i + 1);
+	for(int i=0; i<2; i++) {
+		exclude.add(*cards[i]);
 	}
 
-	int total = 1;
-	int num = Card::NumCards - cards.filled();
-	for(int i=0; i<cards.empty(); i++) {
-		total *= num;
-		num--;
-	}
-	total /= perm;
+	int *counts[2];
+	for(int i=0; i<2; i++) {
+		cout << "Cards (" << i << "): " << *cards[i] << endl;
 
-	cout << "Probabilities:" << endl;
-	int counts[Hand::NumTypes];
-	Draws::counts(cards, exclude, counts);
-	for(int i=1; i<Hand::NumTypes; i++) {
-		Hand::Type type = (Hand::Type)i;
-		int count = counts[i];
-		if(count > 0) {
-			cout << Hand::name(type) << ": " << count << " (" << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (count * 100.0f / total) << "%)" << endl;
+		counts[i] = new int[Hand::NumTypes];
+		Draws::counts(*cards[i], exclude, counts[i]);
+
+		int total = 0;
+		for(int j=0; j<Hand::NumTypes; j++) {
+			total += counts[i][j];
 		}
-	}
-	cout << endl;
 
-	Hand nut = Draws::nut(cards, exclude);
-	cout << "Nut hand: " << nut << endl;
+		cout << "Probabilities:" << endl;
+		for(int j=1; j<Hand::NumTypes; j++) {
+			Hand::Type type = (Hand::Type)j;
+			int count = counts[i][j];
+			if(count > 0) {
+				cout << Hand::name(type) << ": " << count << " (" << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (count * 100.0f / total) << "%)" << endl;
+			}
+		}
+		cout << endl;
+	}
+
+	int wins[2];
+	Wins::wins(2, counts, wins);
+
+	int total = 0;
+	for(int i=0; i<2; i++) {
+		total += wins[i];
+	}
+
+	cout << "Player win percentages:" << endl;
+	for(int i=0; i<2; i++) {
+		cout << "  " << i << ": " << wins[i] << " (" << std::setiosflags(std::ios_base::fixed) << std::setprecision(2) << (wins[i] * 100.0f / total) << "%)" << endl;
+	}
 
 	return 0;
 }

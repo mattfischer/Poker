@@ -176,6 +176,10 @@
 				RelativePath=".\Main.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\Wins.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -200,6 +204,10 @@
 			</File>
 			<File
 				RelativePath=".\Hand.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Wins.hpp"
 				>
 			</File>
 		</Filter>
