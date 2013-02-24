@@ -1,42 +1,19 @@
 #include "Cards.hpp"
 
-Cards::Cards()
-{
-	mSize = 0;
-	mFilled = 0;
-}
-
 Cards::Cards(unsigned int size)
 {
-	mSize = size;
 	mFilled = 0;
 	mCards.resize(size);
-	for(int i=0; i<mSize; i++) {
+	for(int i=0; i<size; i++) {
 		mCards[i] = Card::None;
 	}
-}
-
-Cards::Cards(const Cards &other)
-{
-	mSize = other.mSize;
-	mFilled = other.mFilled;
-	mCards = other.mCards;
-}
-
-Cards &Cards::operator=(const Cards &other)
-{
-	mSize = other.mSize;
-	mFilled = other.mFilled;
-	mCards = other.mCards;
-
-	return *this;
 }
 
 bool Cards::push(const Card &card)
 {
 	bool ret = false;
 
-	if(mFilled < mSize) {
+	if(mFilled < mCards.size()) {
 		mCards[mFilled] = card;
 		mFilled++;
 		ret = true;

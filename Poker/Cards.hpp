@@ -8,14 +8,11 @@
 
 class Cards {
 public:
-	Cards();
-	Cards(unsigned int size);
-	Cards(const Cards &other);
-	Cards &operator=(const Cards &other);
+	Cards(unsigned int size = 0);
 
-	int size() const { return mSize; }
+	int size() const { return mCards.size(); }
 	int filled() const { return mFilled; }
-	int empty() const { return mSize - mFilled; }
+	int empty() const { return mCards.size() - mFilled; }
 
 	const Card &operator[](unsigned int n) const { return mCards[n]; }
 	Card &operator[](unsigned int n) { return mCards[n]; }
@@ -26,7 +23,6 @@ public:
 
 private:
 	std::vector<Card> mCards;
-	unsigned int mSize;
 	unsigned int mFilled;
 };
 
