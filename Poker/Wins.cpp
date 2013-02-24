@@ -1,14 +1,14 @@
 #include "Wins.hpp"
 #include "Draws.hpp"
 
-void Wins::wins(int numPlayers, Cards *cards[], CardSet exclude, int wins[])
+void Wins::wins(int numPlayers, Cards cards[], CardSet exclude, int wins[])
 {
 	int **counts = new int*[numPlayers];
 	Hand::Type *types = new Hand::Type[numPlayers];
 	for(int i=0; i<numPlayers; i++) {
 		wins[i] = 0;
 		counts[i] = new int[Hand::NumTypes];
-		Draws::counts(*cards[i], exclude, counts[i]);
+		Draws::counts(cards[i], exclude, counts[i]);
 	}
 
 	winsRecursive(numPlayers, cards, exclude, wins, counts, types, 0);
@@ -19,7 +19,7 @@ void Wins::wins(int numPlayers, Cards *cards[], CardSet exclude, int wins[])
 	delete[] counts;
 }
 
-void Wins::winsRecursive(int numPlayers, Cards *cards[], CardSet exclude, int wins[], int *counts[], Hand::Type types[], int player)
+void Wins::winsRecursive(int numPlayers, Cards cards[], CardSet exclude, int wins[], int *counts[], Hand::Type types[], int player)
 {
 	if(player == numPlayers) {
 		Hand::Type maxType = Hand::TypeNone;
@@ -50,7 +50,7 @@ void Wins::winsRecursive(int numPlayers, Cards *cards[], CardSet exclude, int wi
 			for(int i=0; i<numPlayers; i++) {
 				if(types[i] == maxType) {
 					rankCounts[i] = new int[Card::NumRanks];
-					Draws::rankCounts(*cards[i], exclude, maxType, rankCounts[i]);
+					Draws::rankCounts(cards[i], exclude, maxType, rankCounts[i]);
 				} else {
 					rankCounts[i] = 0;
 					counts2[i] = counts[i][types[i]];

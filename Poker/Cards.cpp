@@ -1,5 +1,12 @@
 #include "Cards.hpp"
 
+Cards::Cards()
+{
+	mSize = 0;
+	mFilled = 0;
+	mCards = 0;
+}
+
 Cards::Cards(unsigned int size)
 {
 	mSize = size;
@@ -22,7 +29,25 @@ Cards::Cards(const Cards &other)
 
 Cards::~Cards()
 {
-	delete[] mCards;
+	if(mCards) {
+		delete[] mCards;
+	}
+}
+
+Cards &Cards::operator=(const Cards &other)
+{
+	if(mCards) {
+		delete[] mCards;
+	}
+
+	mSize = other.mSize;
+	mFilled = other.mFilled;
+	mCards = new Card[mSize];
+	for(int i=0; i<mSize; i++) {
+		mCards[i] = other.mCards[i];
+	}
+
+	return *this;
 }
 
 bool Cards::push(const Card &card)

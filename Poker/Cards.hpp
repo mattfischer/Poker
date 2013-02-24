@@ -7,8 +7,10 @@
 
 class Cards {
 public:
+	Cards();
 	Cards(unsigned int size);
 	Cards(const Cards &other);
+	Cards &operator=(const Cards &other);
 	~Cards();
 
 	int size() const { return mSize; }

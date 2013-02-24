@@ -13,32 +13,32 @@ using std::endl;
 
 int main(int argc, char *argv[])
 {
-	Cards *cards[2];
+	Cards cards[2];
 
-	cards[0] = new Cards(5);
-	cards[0]->push(Card(13, Card::SuitClubs));
-	cards[0]->push(Card(3, Card::SuitClubs));
-	cards[0]->push(Card(5, Card::SuitClubs));
-	cards[0]->push(Card(8, Card::SuitClubs));
+	cards[0] = Cards(5);
+	cards[0].push(Card(13, Card::SuitClubs));
+	cards[0].push(Card(3, Card::SuitClubs));
+	cards[0].push(Card(5, Card::SuitClubs));
+	cards[0].push(Card(8, Card::SuitClubs));
 
-	cards[1] = new Cards(5);
-	cards[1]->push(Card(12, Card::SuitSpades));
-	cards[1]->push(Card(3, Card::SuitSpades));
-	cards[1]->push(Card(5, Card::SuitSpades));
-	cards[1]->push(Card(8, Card::SuitSpades));
+	cards[1] = Cards(5);
+	cards[1].push(Card(12, Card::SuitSpades));
+	cards[1].push(Card(3, Card::SuitSpades));
+	cards[1].push(Card(5, Card::SuitSpades));
+	cards[1].push(Card(8, Card::SuitSpades));
 
 	CardSet exclude;
 
 	for(int i=0; i<2; i++) {
-		exclude.add(*cards[i]);
+		exclude.add(cards[i]);
 	}
 
 	int *counts[2];
 	for(int i=0; i<2; i++) {
-		cout << "Cards (" << i << "): " << *cards[i] << endl;
+		cout << "Cards (" << i << "): " << cards[i] << endl;
 
 		counts[i] = new int[Hand::NumTypes];
-		Draws::counts(*cards[i], exclude, counts[i]);
+		Draws::counts(cards[i], exclude, counts[i]);
 
 		int total = 0;
 		for(int j=0; j<Hand::NumTypes; j++) {
