@@ -124,3 +124,34 @@ void Draws::countsRecursive(Cards &cards, const CardSet &exclude, int counts[Han
 		}
 	}
 }
+
+void Draws::rankCounts(const Cards &cards, const CardSet &exclude, Hand::Type type, int counts[Card::NumRanks])
+{
+	for(int i=0; i<Card::NumRanks; i++) {
+		counts[i] = 0;
+	}
+
+	Cards mutableCards(cards);
+	rankCountsRecursive(mutableCards, exclude, type, counts, 0);
+}
+
+void Draws::rankCountsRecursive(Cards &cards, const CardSet &exclude, Hand::Type type, int counts[Card::NumRanks], int start)
+{
+	if(cards.empty() == 0) {
+		Hand hand = Hand::identify(cards);
+		if(hand.type() == type) {
+			counts[hand.rank(0)]++;
+		}
+	} else {
+		for(int i=start; i<Card::NumCards; i++) {
+			Card card = Card::fromNum(i);
+			if(exclude.contains(card)) {
+				continue;
+			}
+
+			cards.push(card);
+			rankCountsRecursive(cards, exclude, type, counts, i + 1);
+			cards.pop();
+		}
+	}
+}

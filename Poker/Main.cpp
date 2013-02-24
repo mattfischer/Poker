@@ -16,15 +16,16 @@ int main(int argc, char *argv[])
 	Cards *cards[2];
 
 	cards[0] = new Cards(5);
-	cards[0]->push(Card(5, Card::SuitClubs));
-	cards[0]->push(Card(6, Card::SuitClubs));
+	cards[0]->push(Card(13, Card::SuitClubs));
 	cards[0]->push(Card(3, Card::SuitClubs));
-	cards[0]->push(Card(4, Card::SuitClubs));
+	cards[0]->push(Card(5, Card::SuitClubs));
+	cards[0]->push(Card(8, Card::SuitClubs));
 
 	cards[1] = new Cards(5);
-	cards[1]->push(Card(1, Card::SuitSpades));
-	cards[1]->push(Card(1, Card::SuitClubs));
-	cards[1]->push(Card(4, Card::SuitSpades));
+	cards[1]->push(Card(12, Card::SuitSpades));
+	cards[1]->push(Card(3, Card::SuitSpades));
+	cards[1]->push(Card(5, Card::SuitSpades));
+	cards[1]->push(Card(8, Card::SuitSpades));
 
 	CardSet exclude;
 
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
 	}
 
 	int wins[2];
-	Wins::wins(2, counts, wins);
+	Wins::wins(2, cards, exclude, wins);
 
 	int total = 0;
 	for(int i=0; i<2; i++) {
