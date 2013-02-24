@@ -5,14 +5,16 @@
 #include "Cards.hpp"
 #include "CardSet.hpp"
 
+#include <vector>
+
 class Wins {
 public:
-	static void wins(int numPlayers, Cards cards[], CardSet exclude, int wins[]);
+	static std::vector<int> wins(const std::vector<Cards> &cards, const CardSet &exclude);
 
 private:
-	static void winsRecursive(int numPlayers, Cards cards[], CardSet exclude, int wins[], int *counts[], Hand::Type types[], int player);
-	static void rankWins(int numPlayers, int *rankCounts[], int counts[], int wins[]);
-	static void rankWinsRecursive(int numPlayers, int *rankCounts[], int counts[], int wins[], Card::Rank ranks[], int player);
+	static void winsRecursive(const std::vector<Cards> &cards, const CardSet &exclude, std::vector<int> &wins, const std::vector<std::vector<int> > &counts, std::vector<Hand::Type> &types, int player);
+	static void rankWins(const std::vector<Cards> &cards, const CardSet &exclude, std::vector<int> &wins, const std::vector<std::vector<int> > &counts, const std::vector<Hand::Type> &types, Hand::Type type);
+	static void rankWinsRecursive(const std::vector<std::vector<int> > &rankCounts, const std::vector<std::vector<int> > &counts, const std::vector<Hand::Type> &types, Hand::Type type, std::vector<int> &wins, std::vector<Card::Rank> &ranks, int player);
 };
 
 #endif

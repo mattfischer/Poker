@@ -1,30 +1,30 @@
 #include "Wins.hpp"
 #include "Draws.hpp"
 
-void Wins::wins(int numPlayers, Cards cards[], CardSet exclude, int wins[])
+#include <vector>
+
+std::vector<int> Wins::wins(const std::vector<Cards> &cards, const CardSet &exclude)
 {
-	int **counts = new int*[numPlayers];
-	Hand::Type *types = new Hand::Type[numPlayers];
-	for(int i=0; i<numPlayers; i++) {
+	std::vector<std::vector<int> > counts(cards.size());
+	std::vector<Hand::Type> types(cards.size());
+	std::vector<int> wins(cards.size());
+
+	for(int i=0; i<cards.size(); i++) {
 		wins[i] = 0;
-		counts[i] = new int[Hand::NumTypes];
-		Draws::counts(cards[i], exclude, counts[i]);
+		counts[i] = Draws::counts(cards[i], exclude);
 	}
 
-	winsRecursive(numPlayers, cards, exclude, wins, counts, types, 0);
-	delete[] types;
-	for(int i=0; i<numPlayers; i++) {
-		delete[] counts[i];
-	}
-	delete[] counts;
+	winsRecursive(cards, exclude, wins, counts, types, 0);
+
+	return wins;
 }
 
-void Wins::winsRecursive(int numPlayers, Cards cards[], CardSet exclude, int wins[], int *counts[], Hand::Type types[], int player)
+void Wins::winsRecursive(const std::vector<Cards> &cards, const CardSet &exclude, std::vector<int> &wins, const std::vector<std::vector<int> > &counts, std::vector<Hand::Type> &types, int player)
 {
-	if(player == numPlayers) {
+	if(player == cards.size()) {
 		Hand::Type maxType = Hand::TypeNone;
 		int numOfType = 0;
-		for(int i=0; i<numPlayers; i++) {
+		for(int i=0; i<types.size(); i++) {
 			if(types[i] > maxType) {
 				maxType = types[i];
 				numOfType = 1;
@@ -35,59 +35,47 @@ void Wins::winsRecursive(int numPlayers, Cards cards[], CardSet exclude, int win
 
 		if(numOfType == 1) {
 			int count = 1;
-			for(int i=0; i<numPlayers; i++) {
+			for(int i=0; i<counts.size(); i++) {
 				count *= counts[i][types[i]];
 			}
 
-			for(int i=0; i<numPlayers; i++) {
+			for(int i=0; i<types.size(); i++) {
 				if(types[i] == maxType) {
 					wins[i] += count;
 				}
 			}
 		} else {
-			int **rankCounts = new int*[numPlayers];
-			int *counts2 = new int[numPlayers];
-			for(int i=0; i<numPlayers; i++) {
-				if(types[i] == maxType) {
-					rankCounts[i] = new int[Card::NumRanks];
-					Draws::rankCounts(cards[i], exclude, maxType, rankCounts[i]);
-				} else {
-					rankCounts[i] = 0;
-					counts2[i] = counts[i][types[i]];
-				}
-			}
-			rankWins(numPlayers, rankCounts, counts2, wins);
-			for(int i=0; i<numPlayers; i++) {
-				if(rankCounts[i]) {
-					delete[] rankCounts[i];
-				}
-			}
-			delete[] rankCounts;
-			delete[] counts2;
+			rankWins(cards, exclude, wins, counts, types, maxType);
 		}
 	} else {
 		for(int i=1; i<Hand::NumTypes; i++) {
 			if(counts[player][i] > 0) {
 				types[player] = (Hand::Type)i;
-				winsRecursive(numPlayers, cards, exclude, wins, counts, types, player + 1);
+				winsRecursive(cards, exclude, wins, counts, types, player + 1);
 			}
 		}
 	}
 }
 
-void Wins::rankWins(int numPlayers, int *rankCounts[], int counts[], int wins[])
+void Wins::rankWins(const std::vector<Cards> &cards, const CardSet &exclude, std::vector<int> &wins, const std::vector<std::vector<int> > &counts, const std::vector<Hand::Type> &types, Hand::Type type)
 {
-	Card::Rank *ranks = new Card::Rank[numPlayers];
-	rankWinsRecursive(numPlayers, rankCounts, counts, wins, ranks, 0);
-	delete[] ranks;
+	std::vector<std::vector<int> > rankCounts(cards.size());
+	for(int i=0; i<cards.size(); i++) {
+		if(types[i] == type) {
+			rankCounts[i] = Draws::rankCounts(cards[i], exclude, type);
+		}
+	}
+
+	std::vector<Card::Rank> ranks(cards.size());
+	rankWinsRecursive(rankCounts, counts, types, type, wins, ranks, 0);
 }
 
-void Wins::rankWinsRecursive(int numPlayers, int *rankCounts[], int counts[], int wins[], Card::Rank ranks[], int player)
+void Wins::rankWinsRecursive(const std::vector<std::vector<int> > &rankCounts, const std::vector<std::vector<int> > &counts, const std::vector<Hand::Type> &types, Hand::Type type, std::vector<int> &wins, std::vector<Card::Rank> &ranks, int player)
 {
-	if(player == numPlayers) {
+	if(player == rankCounts.size()) {
 		Card::Rank maxRank = Card::RankNone;
 		int numOfRank = 0;
-		for(int i=0; i<numPlayers; i++) {
+		for(int i=0; i<ranks.size(); i++) {
 			if(Card::aceHigh(ranks[i]) > Card::aceHigh(maxRank)) {
 				maxRank = ranks[i];
 				numOfRank = 1;
@@ -97,31 +85,29 @@ void Wins::rankWinsRecursive(int numPlayers, int *rankCounts[], int counts[], in
 		}
 
 		int count = 1;
-		for(int i=0; i<numPlayers; i++) {
-			if(rankCounts[i]) {
+		for(int i=0; i<rankCounts.size(); i++) {
+			if(types[i] == type) {
 				count *= rankCounts[i][ranks[i]];
 			} else {
-				count *= counts[i];
+				count *= counts[i][types[i]];
 			}
 		}
 
-		for(int i=0; i<numPlayers; i++) {
-			if(rankCounts[i]) {
-				if(ranks[i] == maxRank) {
-					wins[i] += count / numOfRank;
-				}
+		for(int i=0; i<rankCounts.size(); i++) {
+			if(types[i] == type && ranks[i] == maxRank) {
+				wins[i] += count / numOfRank;
 			}
 		}
 	} else {
-		if(rankCounts[player]) {
+		if(types[player] == type) {
 			for(int i=1; i<Card::RankAceHigh; i++) {
 				if(rankCounts[player][i] > 0) {
 					ranks[player] = (Card::Rank)i;
-					rankWinsRecursive(numPlayers, rankCounts, counts, wins, ranks, player + 1);
+					rankWinsRecursive(rankCounts, counts, types, type, wins, ranks, player + 1);
 				}
 			}
 		} else {
-			rankWinsRecursive(numPlayers, rankCounts, counts, wins, ranks, player + 1);
+			rankWinsRecursive(rankCounts, counts, types, type, wins, ranks, player + 1);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 #include "Hand.hpp"
 
+#include <vector>
 #include <algorithm>
 
 Hand::Hand()
@@ -168,7 +169,7 @@ static bool isFlush(int suitCounts[Card::NumSuits], const Cards &cards, Card::Ra
 	}
 
 	if(ret) {
-		Card::Rank *sortedRanks = new Card::Rank[cards.size()];
+		std::vector<Card::Rank> sortedRanks(cards.size());
 		int pos = 0;
 		for(int i=0; i<cards.size(); i++) {
 			sortedRanks[i] = Card::RankNone;
@@ -180,13 +181,11 @@ static bool isFlush(int suitCounts[Card::NumSuits], const Cards &cards, Card::Ra
 			}
 		}
 
-		std::sort(&sortedRanks[0], &sortedRanks[cards.size()]);
+		std::sort(sortedRanks.begin(), sortedRanks.end());
 
 		for(int i=0; i<5; i++) {
 			ranks[i] = Card::aceLow(sortedRanks[cards.size() - i - 1]);
 		}
-
-		delete[] sortedRanks;
 	}
 	return ret;
 }

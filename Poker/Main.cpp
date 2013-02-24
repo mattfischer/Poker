@@ -13,7 +13,7 @@ using std::endl;
 
 int main(int argc, char *argv[])
 {
-	Cards cards[2];
+	std::vector<Cards> cards(2);
 
 	cards[0] = Cards(5);
 	cards[0].push(Card(13, Card::SuitClubs));
@@ -33,12 +33,11 @@ int main(int argc, char *argv[])
 		exclude.add(cards[i]);
 	}
 
-	int *counts[2];
+	std::vector<std::vector<int> > counts(2);
 	for(int i=0; i<2; i++) {
 		cout << "Cards (" << i << "): " << cards[i] << endl;
 
-		counts[i] = new int[Hand::NumTypes];
-		Draws::counts(cards[i], exclude, counts[i]);
+		counts[i] = Draws::counts(cards[i], exclude);
 
 		int total = 0;
 		for(int j=0; j<Hand::NumTypes; j++) {
@@ -56,8 +55,7 @@ int main(int argc, char *argv[])
 		cout << endl;
 	}
 
-	int wins[2];
-	Wins::wins(2, cards, exclude, wins);
+	std::vector<int> wins = Wins::wins(cards, exclude);
 
 	int total = 0;
 	for(int i=0; i<2; i++) {

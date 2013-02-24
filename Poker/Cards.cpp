@@ -4,14 +4,13 @@ Cards::Cards()
 {
 	mSize = 0;
 	mFilled = 0;
-	mCards = 0;
 }
 
 Cards::Cards(unsigned int size)
 {
 	mSize = size;
 	mFilled = 0;
-	mCards = new Card[size];
+	mCards.resize(size);
 	for(int i=0; i<mSize; i++) {
 		mCards[i] = Card::None;
 	}
@@ -21,31 +20,14 @@ Cards::Cards(const Cards &other)
 {
 	mSize = other.mSize;
 	mFilled = other.mFilled;
-	mCards = new Card[mSize];
-	for(int i=0; i<mSize; i++) {
-		mCards[i] = other.mCards[i];
-	}
-}
-
-Cards::~Cards()
-{
-	if(mCards) {
-		delete[] mCards;
-	}
+	mCards = other.mCards;
 }
 
 Cards &Cards::operator=(const Cards &other)
 {
-	if(mCards) {
-		delete[] mCards;
-	}
-
 	mSize = other.mSize;
 	mFilled = other.mFilled;
-	mCards = new Card[mSize];
-	for(int i=0; i<mSize; i++) {
-		mCards[i] = other.mCards[i];
-	}
+	mCards = other.mCards;
 
 	return *this;
 }

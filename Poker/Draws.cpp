@@ -96,17 +96,20 @@ Hand Draws::nut(const Cards &cards, const CardSet &exclude, Hand::Type type)
 	return ret;
 }
 
-void Draws::counts(const Cards &cards, const CardSet &exclude, int counts[Hand::NumTypes])
+std::vector<int> Draws::counts(const Cards &cards, const CardSet &exclude)
 {
+	std::vector<int> counts(Hand::NumTypes);
 	for(int i=0; i<Hand::NumTypes; i++) {
 		counts[i] = 0;
 	}
 
 	Cards mutableCards(cards);
 	countsRecursive(mutableCards, exclude, counts, 0);
+
+	return counts;
 }
 
-void Draws::countsRecursive(Cards &cards, const CardSet &exclude, int counts[Hand::NumTypes], int start)
+void Draws::countsRecursive(Cards &cards, const CardSet &exclude, std::vector<int> &counts, int start)
 {
 	if(cards.empty() == 0) {
 		Hand hand = Hand::identify(cards);
@@ -125,17 +128,20 @@ void Draws::countsRecursive(Cards &cards, const CardSet &exclude, int counts[Han
 	}
 }
 
-void Draws::rankCounts(const Cards &cards, const CardSet &exclude, Hand::Type type, int counts[Card::NumRanks])
+std::vector<int> Draws::rankCounts(const Cards &cards, const CardSet &exclude, Hand::Type type)
 {
+	std::vector<int> counts(Card::NumRanks);
 	for(int i=0; i<Card::NumRanks; i++) {
 		counts[i] = 0;
 	}
 
 	Cards mutableCards(cards);
 	rankCountsRecursive(mutableCards, exclude, type, counts, 0);
+
+	return counts;
 }
 
-void Draws::rankCountsRecursive(Cards &cards, const CardSet &exclude, Hand::Type type, int counts[Card::NumRanks], int start)
+void Draws::rankCountsRecursive(Cards &cards, const CardSet &exclude, Hand::Type type, std::vector<int> &counts, int start)
 {
 	if(cards.empty() == 0) {
 		Hand hand = Hand::identify(cards);

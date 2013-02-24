@@ -3,6 +3,7 @@
 
 #include "Card.hpp"
 
+#include <vector>
 #include <ostream>
 
 class Cards {
@@ -11,7 +12,6 @@ public:
 	Cards(unsigned int size);
 	Cards(const Cards &other);
 	Cards &operator=(const Cards &other);
-	~Cards();
 
 	int size() const { return mSize; }
 	int filled() const { return mFilled; }
@@ -25,7 +25,7 @@ public:
 	bool pop(int n = 1);
 
 private:
-	Card *mCards;
+	std::vector<Card> mCards;
 	unsigned int mSize;
 	unsigned int mFilled;
 };
