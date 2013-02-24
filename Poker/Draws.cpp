@@ -35,40 +35,6 @@ std::vector<Cards> Draws::drawsRecursive(Cards &cards, const CardSet &exclude, H
 	return ret;
 }
 
-int Draws::numDraws(const Cards &cards, const CardSet &exclude, Hand::Type type)
-{
-	Cards mutableCards(cards);
-	return numDrawsRecursive(mutableCards, exclude, type, 0);
-}
-
-int Draws::numDrawsRecursive(Cards &cards, const CardSet &exclude, Hand::Type type, int start)
-{
-	int ret = 0;
-
-	if(cards.empty() == 0) {
-		if(Hand::identify(cards).type() == type) {
-			ret++;
-		}
-	} else {
-		for(int i=start; i<Card::NumCards; i++) {
-			Card card = Card::fromNum(i);
-			if(exclude.contains(card)) {
-				continue;
-			}
-
-			cards.push(card);
-
-			if(Hand::possible(type, cards)) {
-				ret += numDrawsRecursive(cards, exclude, type, i + 1);
-			}
-
-			cards.pop();
-		}
-	}
-
-	return ret;
-}
-
 Hand Draws::nut(const Cards &cards, const CardSet &exclude, Hand::Type type)
 {
 	std::vector<Cards> nutDraws;
